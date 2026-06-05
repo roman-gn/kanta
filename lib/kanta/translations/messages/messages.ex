@@ -169,8 +169,9 @@ defmodule Kanta.Translations.Messages do
         # Delete the source message
         Repo.get_repo().delete(from_message)
 
-        # Invalidate cache
+        # Invalidate cache (locally + across the cluster)
         Kanta.Cache.delete_all!()
+        Kanta.Cache.broadcast_invalidate_all()
 
         # Return the target message
         to_message

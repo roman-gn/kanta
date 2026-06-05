@@ -24,7 +24,11 @@ defmodule Kanta do
   def init(%Config{plugins: plugins} = conf) do
     children = [
       {Kanta.MigrationVersionChecker, []},
-      {MessagesExtractorAgent, conf: conf, name: Registry.via(conf.name, MessagesExtractorAgent)}
+      {MessagesExtractorAgent, conf: conf, name: Registry.via(conf.name, MessagesExtractorAgent)},
+      # Real-time cross-node cache invalidation (no-op unless `config :kanta, :pubsub`
+      # is set). Lives here — the host app's supervision tree — so the configured
+      # PubSub is already started when it subscribes.
+      Kanta.Cache.Invalidator
     ]
 
     children = children ++ Enum.map(plugins, &plugin_child_spec(&1, conf))
