@@ -66,7 +66,7 @@ defmodule Kanta.Query do
               caller: self(),
               module: Repo.get_repo(),
               page_number: page,
-              page_size: per_page || @default_page_size,
+              page_size: per_page,
               options: []
             }
           )

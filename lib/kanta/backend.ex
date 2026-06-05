@@ -25,7 +25,6 @@ defmodule Kanta.Backend do
 
   """
   alias Kanta.Utils.ModuleFolder
-  require Logger
 
   defmacro __using__(opts) do
     quote bind_quoted: [opts: opts] do

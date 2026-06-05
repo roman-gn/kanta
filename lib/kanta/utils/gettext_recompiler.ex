@@ -6,8 +6,6 @@ defmodule Kanta.Utils.GettextRecompiler do
   allowing the system to trigger recompilation when needed.
   """
 
-  require Logger
-
   def setup_recompile_flag(flag_file) do
     if Gettext.Extractor.extracting?() do
       File.mkdir_p!(Path.dirname(flag_file))
