@@ -49,11 +49,6 @@ defmodule Kanta.Backend do
         Kanta.Utils.GettextRecompiler.needs_recompile?(@flag_file)
       end
 
-      def __gettext__(:known_locales) do
-        backend = fallback_backend()
-        Gettext.known_locales(backend)
-      end
-
       def handle_missing_translation(locale, domain, msgctxt, msgid, bindings) do
         case Kanta.Backend.Adapter.CachedDB.lgettext(
                locale,
