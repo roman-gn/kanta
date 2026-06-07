@@ -45,6 +45,8 @@ defmodule Kanta.Backend do
         use Gettext.Backend, opts
       end
 
+      @before_compile Kanta.Backend
+
       def __mix_recompile__?() do
         Kanta.Utils.GettextRecompiler.needs_recompile?(@flag_file)
       end
@@ -105,6 +107,25 @@ defmodule Kanta.Backend do
       defp fallback_backend() do
         Module.concat(__MODULE__, GettextFallbackBackend)
       end
+    end
+  end
+
+  @doc false
+  defmacro __before_compile__(_env) do
+    quote do
+      # `Gettext.Compiler` (via its own @before_compile) injects
+      # `__gettext__(:known_locales)` baked from THIS backend's own priv. We
+      # override it here — this hook is registered after Gettext's, so it runs
+      # after it — to return the fallback backend's locales instead.
+      # `defoverridable` makes this a clean override rather than a shadowing
+      # clause (which Elixir 1.20 reports as a redundant clause).
+      defoverridable __gettext__: 1
+
+      def __gettext__(:known_locales) do
+        Gettext.known_locales(fallback_backend())
+      end
+
+      def __gettext__(key), do: super(key)
     end
   end
 end
