@@ -68,17 +68,19 @@ defmodule KantaWeb.Dashboard.DashboardLive do
     GetLocaleTranslationProgress.find(language.id)
   end
 
+  # The result stays nil until the first extraction succeeds, so the dashboard has
+  # to render without one instead of crashing on mount.
   defp get_stale_messages_count do
-    %Result{stale_count: stale_count} =
-      MessagesExtractorAgent.get_stale_detection_result()
-
-    stale_count
+    case MessagesExtractorAgent.get_stale_detection_result() do
+      %Result{stale_count: stale_count} -> stale_count
+      nil -> 0
+    end
   end
 
   defp get_mergeable_messages_count do
-    %Result{mergeable_count: mergeable_count} =
-      MessagesExtractorAgent.get_stale_detection_result()
-
-    mergeable_count
+    case MessagesExtractorAgent.get_stale_detection_result() do
+      %Result{mergeable_count: mergeable_count} -> mergeable_count
+      nil -> 0
+    end
   end
 end
