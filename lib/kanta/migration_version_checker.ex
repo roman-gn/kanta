@@ -16,6 +16,8 @@ defmodule Kanta.MigrationVersionChecker do
 
   use GenServer
 
+  require Logger
+
   @colors [
     warning: :yellow,
     highlight: :cyan,
@@ -29,9 +31,25 @@ defmodule Kanta.MigrationVersionChecker do
 
   @impl true
   def init(_) do
+    # This check queries the database, so it must not run here: failing in
+    # `init/1` fails the host application's start and brings the whole VM down
+    # with it. The check is advisory console output — never worth an outage.
+    {:ok, %{}, {:continue, :check_version}}
+  end
+
+  @impl true
+  def handle_continue(:check_version, state) do
     check_version()
 
-    {:ok, %{}}
+    {:noreply, state}
+  catch
+    kind, reason ->
+      Logger.warning(
+        "[Kanta] Migration version check failed\n" <>
+          Exception.format(kind, reason, __STACKTRACE__)
+      )
+
+      {:noreply, state}
   end
 
   defp check_version do
