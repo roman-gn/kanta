@@ -39,7 +39,7 @@ defmodule Kanta.MigrationVersionChecker do
 
   @impl true
   def handle_continue(:check_version, state) do
-    check_version()
+    if Kanta.boot_jobs_enabled?(), do: check_version()
 
     {:noreply, state}
   catch

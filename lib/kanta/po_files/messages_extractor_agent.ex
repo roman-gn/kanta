@@ -30,7 +30,13 @@ defmodule Kanta.PoFiles.MessagesExtractorAgent do
 
   @impl true
   def handle_continue(:extract_messages, state) do
-    {:noreply, extract_messages(state)}
+    if Kanta.boot_jobs_enabled?() do
+      {:noreply, extract_messages(state)}
+    else
+      Logger.debug("[Kanta] Skipping message extraction: :boot_jobs is disabled.")
+
+      {:noreply, state}
+    end
   end
 
   @impl true

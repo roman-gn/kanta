@@ -45,6 +45,20 @@ defmodule Kanta do
     end
   end
 
+  @doc """
+  Whether Kanta does its start-up work: extracting messages from the .po files
+  into the database, detecting stale messages, and checking the migration
+  version. Enabled unless the host application opts out with:
+
+      config :kanta, :boot_jobs, false
+
+  Both processes query the database and then stay alive for the lifetime of the
+  application, which under `Ecto.Adapters.SQL.Sandbox` holds a connection for the
+  whole of a host's test run. Opting out leaves `Kanta.Backend` serving
+  translations from the .po files instead.
+  """
+  def boot_jobs_enabled?, do: Application.get_env(:kanta, :boot_jobs, true)
+
   defp plugin_child_spec({module, opts}, conf) do
     name = Registry.via(conf.name, {:plugin, module})
     opts = Keyword.merge(opts, conf: conf, name: name)

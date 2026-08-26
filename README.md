@@ -182,6 +182,17 @@ config :my_app, Kanta,
 
 Ecto repo module is used mostly for translations persistency. We also need endpoint to use VerifiedRoutes and project_root to locate the project's .po files.
 
+#### Disabling start-up work
+
+When your application boots, Kanta extracts messages from your .po files and checks its migration version. Both run in processes that query the database and then stay alive for as long as your application does, which is often unwanted in a test run — under `Ecto.Adapters.SQL.Sandbox` each of them holds a connection until it exits. Opt out with:
+
+```elixir
+# config/test.exs
+config :kanta, :boot_jobs, false
+```
+
+Translations then come from your .po files through `Kanta.Backend`, and the Kanta UI still detects stale messages when you ask it to.
+
 ### Database migrations
 
 Migrations is heavily inspired by the Oban approach. To add to the project tables necessary for the operation of Kanta and responsible for storing translations create migration with:
