@@ -9,15 +9,24 @@ defmodule Kanta.Translations.Locale.Services.CreateLocaleFromIsoCode do
 
   alias Kanta.Translations.Locale.Utils.LocaleCodeMapper
 
+  # A locale row must never exist without its plurals header: the singular
+  # extractor creates locales before any plural message has been seen, and a
+  # header-less row makes every plural lookup fail until a plural message for
+  # that locale is extracted. Derive it from the locale code (the same source
+  # `MessagesExtractor.get_plurals_header/2` falls back to), keeping the
+  # legacy attrs when Expo knows nothing about the code.
   def call(iso_code, nil) do
-    %Locale{}
-    |> Locale.changeset(mapped_attrs(iso_code))
-    |> Repo.get_repo().insert()
+    case Expo.PluralForms.plural_form(iso_code) do
+      {:ok, plural_forms} -> call(iso_code, Expo.PluralForms.to_string(plural_forms))
+      :error -> insert(mapped_attrs(iso_code))
+    end
   end
 
-  def call(iso_code, plurals_header) do
+  def call(iso_code, plurals_header), do: insert(mapped_attrs(iso_code, plurals_header))
+
+  defp insert(attrs) do
     %Locale{}
-    |> Locale.changeset(mapped_attrs(iso_code, plurals_header))
+    |> Locale.changeset(attrs)
     |> Repo.get_repo().insert()
   end
 
