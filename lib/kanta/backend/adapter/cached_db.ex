@@ -95,7 +95,7 @@ defmodule Kanta.Backend.Adapter.CachedDB do
                application_source_id: nil
              ]
            ),
-         {:ok, plurals_options} <- Expo.PluralForms.parse(plurals_header),
+         {:ok, plurals_options} <- parse_plurals_header(plurals_header),
          nplural_index <- Expo.PluralForms.index(plurals_options, n),
          {:ok, %PluralTranslation{translated_text: text}} when not is_nil(text) <-
            Translations.get_plural_translation(
@@ -111,6 +111,13 @@ defmodule Kanta.Backend.Adapter.CachedDB do
       _ -> {:error, :not_found}
     end
   end
+
+  # A locale row can exist without its plurals header (an extraction that
+  # was interrupted before finishing writes the locale first). Treat that as
+  # "no DB translation" so the caller falls back to the compiled PO files
+  # instead of raising FunctionClauseError on every plural lookup.
+  defp parse_plurals_header(nil), do: {:error, :no_plurals_header}
+  defp parse_plurals_header(header), do: Expo.PluralForms.parse(header)
 
   defp maybe_get_context_id(nil), do: {:ok, nil}
 
