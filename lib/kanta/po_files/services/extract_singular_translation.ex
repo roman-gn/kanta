@@ -12,17 +12,20 @@ defmodule Kanta.PoFiles.Services.ExtractSingularTranslation do
     Repo.get_repo().transaction(fn ->
       with attrs <- Map.put(attrs, :message_type, :singular),
            {:ok, message} <- ExtractMessage.call(attrs),
-           {:ok, locale} <- get_or_create_locale(attrs[:locale_name]),
+           {:ok, locale} <- get_or_create_locale(attrs[:locale_name], attrs[:plurals_header]),
            {:ok, translation} <- create_or_update_singular_translation(attrs, message, locale) do
         translation
       end
     end)
   end
 
-  defp get_or_create_locale(iso639_code) do
+  # The header comes from the same file the message did, so a locale first seen
+  # through a singular message is still created with one. Otherwise it stayed nil
+  # until some later plural message supplied it.
+  defp get_or_create_locale(iso639_code, plurals_header) do
     case Translations.get_locale(filter: [iso639_code: iso639_code]) do
       {:ok, locale} -> {:ok, locale}
-      {:error, :locale, :not_found} -> CreateLocaleFromIsoCode.call(iso639_code, nil)
+      {:error, :locale, :not_found} -> CreateLocaleFromIsoCode.call(iso639_code, plurals_header)
     end
   end
 

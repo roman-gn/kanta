@@ -42,7 +42,8 @@ defmodule Kanta.PoFiles.MessagesExtractor do
           context_name: @default_context,
           locale_name: locale,
           domain_name: domain,
-          original_text: Enum.join(texts)
+          original_text: Enum.join(texts),
+          plurals_header: plurals_header
         })
 
       %Expo.Message.Singular{msgctxt: [msgctxt], msgid: msgid, msgstr: texts} ->
@@ -51,7 +52,8 @@ defmodule Kanta.PoFiles.MessagesExtractor do
           context_name: msgctxt,
           locale_name: locale,
           domain_name: domain,
-          original_text: Enum.join(texts)
+          original_text: Enum.join(texts),
+          plurals_header: plurals_header
         })
 
       %Expo.Message.Plural{msgctxt: nil, msgid_plural: msgid, msgstr: plurals_map} ->
